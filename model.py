@@ -3,13 +3,13 @@ from torch import nn
 
 
 class ConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, use_activation=True, bias=True, **kwargs):
+    def __init__(self, in_channels, out_channels, use_activation=True, **kwargs):
         super().__init__()
-        self.conv = nn.Conv2d(in_channels, out_channels, bias=bias, **kwargs)
-        self.activation = nn.LeakyReLU(0.2, inplace=True) if use_activation else nn.Identity()
+        self.cnn = nn.Conv2d(in_channels, out_channels, **kwargs, bias=True)
+        self.act = nn.LeakyReLU(0.2, inplace=True) if use_activation else nn.Identity()
 
     def forward(self, x):
-        return self.activation(self.conv(x))
+        return self.act(self.cnn(x))
 
 
 class UpsampleBlock(nn.Module):
@@ -19,12 +19,12 @@ class UpsampleBlock(nn.Module):
         self.conv = nn.Conv2d(
             in_channels, in_channels, kernel_size=3, stride=1, padding=1, bias=True
         )
-        self.activation = nn.LeakyReLU(0.2, inplace=True)
+        self.act = nn.LeakyReLU(0.2, inplace=True)
 
     def forward(self, x):
         x = self.upsample(x)
         x = self.conv(x)
-        return self.activation(x)
+        return self.act(x)
 
 
 class DenseResidualBlock(nn.Module):
@@ -71,13 +71,13 @@ class Generator(nn.Module):
             in_channels, num_channels, kernel_size=3, stride=1, padding=1, bias=True
         )
 
-        self.residual = nn.Sequential(*[RRDB(num_channels) for _ in range(num_blocks)])
+        self.residuals = nn.Sequential(*[RRDB(num_channels) for _ in range(num_blocks)])
 
         self.conv = nn.Conv2d(
             num_channels, num_channels, kernel_size=3, stride=1, padding=1, bias=True
         )
 
-        self.upsample = nn.Sequential(
+        self.upsamples = nn.Sequential(
             UpsampleBlock(num_channels),
             UpsampleBlock(num_channels),
         )
@@ -90,8 +90,8 @@ class Generator(nn.Module):
 
     def forward(self, x):
         initial = self.initial(x)
-        x = self.conv(self.residual(initial)) + initial
-        x = self.upsample(x)
+        x = self.conv(self.residuals(initial)) + initial
+        x = self.upsamples(x)
         return self.final(x)
 
 

@@ -17,6 +17,10 @@ HIGH_RES = 128
 LOW_RES = HIGH_RES // 4
 IMG_CHANNELS = 3
 
+print("===============================================================")
+print("DEVICE: ", DEVICE)
+print("===============================================================")
+
 highres_transform = A.Compose(
     [
         A.Normalize(mean=[0, 0, 0], std=[1, 1, 1]),
