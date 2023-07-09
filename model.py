@@ -51,7 +51,7 @@ class DenseResidualBlock(nn.Module):
             out = block(new_inputs)
             new_inputs = torch.cat([new_inputs, out], dim=1)
 
-        return x + self.residual_beta * out + x
+        return self.residual_beta * out + x
 
 
 class RRDB(nn.Module):
